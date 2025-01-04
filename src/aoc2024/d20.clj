@@ -8,7 +8,7 @@
 (def racetrack (str/split (slurp "resources/aoc2024/d20") #"\n"))
 
 
-(defn dijkstra [m mi [si sj] [ei ej]]
+(defn dijkstra [m [si sj] [ei ej]]
   (let [find-neighbours (fn [i j r] (for [[oi oj] [[-1 0][1 0][0 1][0 -1]]
                                         :let [i' (+ i oi)
                                               j' (+ j oj)
@@ -28,7 +28,7 @@
   (let [mi (dec (count m))
         ss (utils/find-start m \S)
         ee (utils/find-start m \E)
-        baseline ((dijkstra m mi ss ee) ee)
+        baseline ((dijkstra m ss ee) ee)
         c (count m)] 
     (loop [j 0 i 0 r 0]
       (cond 
@@ -38,7 +38,7 @@
         (not (or 
                (and (not= \# (get-in m [j (inc i)]) \#) (not= \# (get-in m [j (dec i)] \#)))
                (and (not= \# (get-in m [(inc j) i]) \#) (not= \# (get-in m [(dec j) i] \#))))) (recur j (inc i) r)
-        :else (let [tmp ((dijkstra (assoc-in m [j i] \.)  mi ss ee) ee)]
+        :else (let [tmp ((dijkstra (assoc-in m [j i] \.) ss ee) ee)]
                 (if (>= (- baseline tmp) sp)
                   (recur j (inc i) (inc r))
                   (recur j (inc i) r)))))))
@@ -55,7 +55,7 @@
   (let [mi (dec (count m))
         ss (utils/find-start m \S)
         ee (utils/find-start m \E)
-        visited (dijkstra m mi ss ee)
+        visited (dijkstra m ss ee)
         find-neighbours (fn [i j] (for [[oi oj] [[-1 0][1 0][0 1][0 -1]]
                                         :let [i' (+ i oi)
                                               j' (+ j oj)
