@@ -1,6 +1,4 @@
-(ns utils
-  (:require [clojure.string :as str]
-            [clj-async-profiler.core :as prof]))
+(ns utils)
 
 
 (defn vec-insert [v i e] (vec (concat (take i v) [e] (drop i v))))

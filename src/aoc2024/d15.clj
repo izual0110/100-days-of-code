@@ -1,7 +1,6 @@
 (ns  aoc2024.d15
   (:require [clojure.string :as str]
-            [clj-async-profiler.core :as prof])
-   (:use     [utils]))
+            [utils :as u]))
 
 (def test-movements (str/split (slurp "resources/aoc2024/d15_t") #"\n\n"))
 (def movements (str/split (slurp "resources/aoc2024/d15_1") #"\n\n"))
@@ -72,21 +71,21 @@
   simulate
   calculate)))
 
-(vec-insertm [1 2 3 4] 1 [6 6])
+(u/vec-insertm [1 2 3 4] 1 [6 6])
 
 (defn update-map [[r-map r-movements]]
   (loop [j 0 i 0 r r-map]
     (cond 
       (> j (count r)) [r r-movements]
       (> i (count (get r j))) (recur (inc j) 0 r)
-      (= \# (get-in r [j i])) (recur j (+ i 2) (assoc r j (vec-insert (get r j) i \#)))
+      (= \# (get-in r [j i])) (recur j (+ i 2) (assoc r j (u/vec-insert (get r j) i \#)))
       (= \O (get-in r [j i])) (recur j (+ i 2) (-> r
-                                                     (assoc j (vec-insert (get r j) i \[))
+                                                     (assoc j (u/vec-insert (get r j) i \[))
                                                      (assoc-in [j (inc i)] \])
                                                  ))
                                     
-      (= \@ (get-in r [j i])) (recur j (+ i 2) (assoc r j (vec-insert (get r j) (inc i) \.)))
-      (= \. (get-in r [j i])) (recur j (+ i 2) (assoc r j (vec-insert (get r j) i \.)))                                    
+      (= \@ (get-in r [j i])) (recur j (+ i 2) (assoc r j (u/vec-insert (get r j) (inc i) \.)))
+      (= \. (get-in r [j i])) (recur j (+ i 2) (assoc r j (u/vec-insert (get r j) i \.)))                                    
       :else (recur j (inc i) r))))
 
 

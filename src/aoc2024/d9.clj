@@ -1,13 +1,11 @@
 (ns  aoc2024.d9
-  (:require [clojure.string :as str]
-            [clj-async-profiler.core :as prof]))
+  (:require [clj-async-profiler.core :as prof]))
 
 (def test-disk-map (slurp "resources/aoc2024/d9_t"))
 (def disk-map (slurp "resources/aoc2024/d9_1"))
 
 
 (defn vec-insert [v i e] (vec (concat (take i v) [e] (drop i v))))
-(defn vec-remove [v i] (into (subvec v 0 i) (subvec v (inc i))))
 
 (defn calculate [m]
   (loop [m m s 0 e (count m) i 0 f 0 r 0]

@@ -23,7 +23,7 @@
     :RIGHT :DOWN
     :DOWN :LEFT
     :LEFT :UP
-    :else (throw (ex-info "!!!!"))))
+    :else (throw (Exception. "!!!!"))))
 
 (defn calculate [m]
   (let [s (find-start m)] 
