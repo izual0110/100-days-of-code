@@ -17,6 +17,7 @@
       c
       (recur (next n)  (mod (+ (first n) a) 100) (if (= 0 a) (inc c) c)))))
 
+(assert (= 98 (mod -2 100)))
 
 (assert (= 3  (->> test_pswd
                    (map parse)
@@ -33,12 +34,13 @@
       (let [t (+ (first n) a)
             d (abs (long (/ t 100)))
             c (cond
-                (and (< t 0) (not= a 0)) (+ 1 c d)
-                (and (< t 0) (= a 0)) (+ c d)
+                (= a 0) (+ c d)
+                (< t 0) (+ 1 c d)
                 (> t 0) (+ c d)
-                (= t 0) (inc c)
-                :else c)]
+                :else (inc c))]
         (recur (next n) (mod t 100) c)))))
+
+(assert (= 3 (calc2 [-50 -200])))
 
 (assert (= 6 (->> test_pswd
                   (map parse)
