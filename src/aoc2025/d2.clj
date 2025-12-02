@@ -1,5 +1,6 @@
 (ns aoc2025.d2  (:require [clojure.string :as str]
-                          [utils :as u]))
+                          [utils :as u]
+                          [clj-async-profiler.core :as prof]))
 
 (def test_ids (str/split (slurp "resources/aoc2025/2t.txt") #","))
 (def ids (str/split (slurp "resources/aoc2025/2.txt") #","))
@@ -19,12 +20,11 @@
 
 (assert (false? (check-id 1001)))
 
-(defn check-ids [[s e]]
+(defn check-ids [[^long s ^long e]]
   (loop [i s c 0]
     (if (> i e)
       c
       (recur (inc i) (if (check-id i) (+ c i) c)))))
-
 
 (defn char-count [pattern text]
   (count (re-seq (#(pattern)) text)))
@@ -34,20 +34,22 @@
 (assert (= "123" (subs "123456" 0 3)))
 
 (defn check-id2 [id]
-  (let [id (str id)]
+  (let [id (str id)
+        c (count id)]
     (loop [i 1]
       (cond
-        (> i (/ (count id) 2)) false
-        (not= (mod (count id) i) 0) (recur (inc i))
-        (let [matches (char-count #(re-pattern (subs id 0 i)) id)]
-          (and  (> matches 1) (= (count id) (* matches  (count (subs id 0 i)))))) true
+        (> i (/ c 2)) false
+        (not= (mod c i) 0) (recur (inc i))
+        (let [prefix (subs id 0 i)
+              matches (char-count #(re-pattern prefix) id)]
+          (and  (> matches 1) (= c (* matches  (count prefix))))) true
         :else (recur (inc i))))))
 
 (assert (check-id2 1188511885))
 
 
-(defn check-ids2 [[s e]]
-  (loop [i s c 0]
+(defn check-ids2 [[^long s ^long e]]
+  (loop [i s  c  0]
     (if (> i e)
       c
       (recur (inc i) (if (check-id2 i) (+ c i) c)))))
@@ -72,3 +74,21 @@
                             (map check-ids2)
                             (apply +))))
 
+
+; "Elapsed time: 2824.398355 msecs"
+
+(do
+  (vec (for [i (range 10)] (time (->> ids
+                                        (map parse)
+                                        (map check-ids2)
+                                        (apply +)))))
+  (println "start profiling")
+  (prof/start)
+  (time (->> ids
+             (map parse)
+             (map check-ids2)
+             (apply +)))
+  (println (prof/stop))
+  (println "end profiling"))
+
+(set! *warn-on-reflection* true)
