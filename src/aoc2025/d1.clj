@@ -23,9 +23,9 @@
                    (map parse)
                    calc)))
 
-(assert (= 1040  (->> pswd
-                      (map parse)
-                      calc)))
+(assert (= 1040  (time (->> pswd
+                            (map parse)
+                            calc))))
 
 (defn calc2 [n]
   (loop [n n a 50 c 0]
@@ -46,6 +46,6 @@
                   (map parse)
                   calc2)))
 
-(assert (= 6027 (->> pswd
-                  (map parse)
-                  calc2)))
+(assert (= 6027 (time (->> pswd
+                           (map parse)
+                           calc2))))
