@@ -9,14 +9,16 @@
   (vec (map Long/parseLong (str/split id #"-"))))
 
 (defn check-id [id]
-  (cond
-    (= 1 (mod (count (str id)) 2)) false
-    :else (loop [i 0]
-            (if (= i (/ (count (str id)) 2))
-              true
-              (if (= (nth (str id) i) (nth (str id) (+ (/ (count (str id)) 2) i)))
-                (recur (inc i))
-                false)))))
+  (let [id (str id)
+        c (count id)]
+    (if (= 1 (mod c 2))
+      false
+      (loop [i 0]
+        (if (= i (/ c 2))
+          true
+          (if (= (nth id i) (nth id (+ (/ c 2) i)))
+            (recur (inc i))
+            false))))))
 
 (assert (false? (check-id 1001)))
 
@@ -25,13 +27,6 @@
     (if (> i e)
       c
       (recur (inc i) (if (check-id i) (+ c i) c)))))
-
-(defn char-count [pattern text]
-  (count (re-seq (#(pattern)) text)))
-
-(assert (= 3 (char-count #(re-pattern "123") "123123123")))
-
-(assert (= "123" (subs "123456" 0 3)))
 
 (defn check-id2 [id]
   (let [id (str id)
@@ -45,7 +40,6 @@
 
 (assert (check-id2 1188511885))
 
-
 (defn check-ids2 [[^long s ^long e]]
   (loop [i s  c  0]
     (if (> i e)
@@ -57,34 +51,35 @@
                            (map check-ids)
                            (apply +))))
 
-(assert (= 40214376723 (->> ids
-                            (map parse)
-                            (map check-ids)
-                            (apply +))))
+(assert (= 40214376723 (time (->> ids
+                                  (pmap parse)
+                                  (pmap check-ids)
+                                  (apply +)))))
 
 (assert (= 4174379265 (->> test_ids
                            (map parse)
                            (map check-ids2)
                            (apply +))))
 
-(assert (= 50793864718 (->> ids
-                            (map parse)
-                            (map check-ids2)
-                            (apply +))))
+(assert (= 50793864718 (time (->> ids
+                                  (pmap parse)
+                                  (pmap check-ids2)
+                                  (apply +)))))
 
 ; "Elapsed time: 2824.398355 msecs"
 ; "Elapsed time: 1357.628669 msecs"
+; "Elapsed time: 461.9015 msecs"
 
 (do
   (vec (for [i (range 10)] (time (->> ids
-                                        (map parse)
-                                        (map check-ids2)
-                                        (apply +)))))
+                                      (mapv parse)
+                                      (pmap check-ids2)
+                                      (apply +)))))
   (println "start profiling")
   (prof/start)
   (time (->> ids
-             (map parse)
-             (map check-ids2)
+             (pmap parse)
+             (pmap check-ids2)
              (apply +)))
   (println (prof/stop))
   (println "end profiling"))
