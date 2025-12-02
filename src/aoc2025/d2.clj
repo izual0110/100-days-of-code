@@ -40,9 +40,7 @@
       (cond
         (> i (/ c 2)) false
         (not= (mod c i) 0) (recur (inc i))
-        (let [prefix (subs id 0 i)
-              matches (char-count #(re-pattern prefix) id)]
-          (and  (> matches 1) (= c (* matches  (count prefix))))) true
+        (empty? (str/replace id (subs id 0 i) "")) true
         :else (recur (inc i))))))
 
 (assert (check-id2 1188511885))
@@ -74,8 +72,8 @@
                             (map check-ids2)
                             (apply +))))
 
-
 ; "Elapsed time: 2824.398355 msecs"
+; "Elapsed time: 1357.628669 msecs"
 
 (do
   (vec (for [i (range 10)] (time (->> ids
