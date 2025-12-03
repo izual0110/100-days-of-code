@@ -10,15 +10,14 @@
 
 (defn find-max [digits]
   (let [c (count digits)
-        mi1 (loop [i 0 mi 0]
-              (if (> i (- c 2))
-                mi
-                (recur (inc i) (if (> (get digits i) (get digits mi)) i mi))))
-        mi2 (loop [i (inc mi1) mi i]
-              (if (> i (- c 1))
-                mi
-                (recur (inc i) (if (> (get digits i) (get digits mi)) i mi))))]
-    (+ (* (get digits mi1) 10) (get digits mi2))))
+        gd (fn [i] (get digits i))
+        f (fn [si mv] (loop [i si mi si]
+                  (if (> i (- c mv))
+                    mi
+                    (recur (inc i) (if (> (gd i) (gd mi)) i mi)))))
+        mi1 (f 0 2)
+        mi2 (f (inc mi1) 1)]
+    (+ (* (gd mi1) 10) (gd mi2))))
 
 
 (assert (= 357 (->> test_joltage
