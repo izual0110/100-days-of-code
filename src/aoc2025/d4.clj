@@ -13,16 +13,18 @@
 (defn get-neighbors [grid x y]
   (let [max-x (dec (count grid))
         max-y (dec (count (first grid)))]
-    (->> positions
-         (map (fn [[dx dy]] [(+ x dx) (+ y dy)]))
-         (filter (fn [[nx ny]]
-                   (and (>= nx 0)
-                        (>= ny 0)
-                        (<= nx max-x)
-                        (<= ny max-y))))
-         (map (fn [[nx ny]] (nth (nth grid nx) ny)))
-         (filter #(= \@ %))
-         count)))
+    (reduce (fn [acc [dx dy]]
+              (if (let [nx (+ x dx)
+                        ny (+ y dy)]
+                    (and (>= nx 0)
+                         (>= ny 0)
+                         (<= nx max-x)
+                         (<= ny max-y)
+                         (= \@ (nth (nth grid nx) ny))))
+                (inc acc)
+                acc)) 
+            0 positions)))
+
 
 (assert (= 13 (time (let [g (->> test_grid
                                  (mapv vec))]
