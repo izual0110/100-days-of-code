@@ -20,7 +20,7 @@
                         (>= ny 0)
                         (<= nx max-x)
                         (<= ny max-y))))
-         (map (fn [[nx ny]] (get-in grid [nx ny])))
+         (map (fn [[nx ny]] (nth (nth grid nx) ny)))
          (filter #(= \@ %))
          count)))
 
@@ -28,12 +28,12 @@
                                  (mapv vec))]
                       (->> g
                            (map-indexed (fn [x row]
-                                          (map-indexed (fn [y _]
-                                                         (if (= \@ (get-in g [x y]))
+                                          (map-indexed (fn [y v]
+                                                         (if (= \@ v)
                                                            (get-neighbors g x y)
                                                            10))
                                                        row)))
-                           flatten
+                           (mapcat identity)
                            (filter #(< % 4))
                            count)))))
 
@@ -41,12 +41,12 @@
                                    (mapv vec))]
                         (->> g
                              (map-indexed (fn [x row]
-                                            (map-indexed (fn [y _]
-                                                           (if (= \@ (get-in g [x y]))
+                                            (map-indexed (fn [y v]
+                                                           (if (= \@ v)
                                                              (get-neighbors g x y)
                                                              10))
                                                          row)))
-                             flatten
+                             (mapcat identity)
                              (filter #(< % 4))
                              count)))))
 
@@ -54,16 +54,15 @@
 (defn calc [grid]
   (loop [g grid]
     (let [new-g (vec (map-indexed (fn [x row]
-                                    (vec (map-indexed (fn [y _]
-                                                        (let [v (get-in g [x y])]
-                                                          (if (and (= \@ v) (< (get-neighbors g x y) 4))
-                                                            \x
-                                                            v)))
+                                    (vec (map-indexed (fn [y v]
+                                                        (if (and (= \@ v) (< (get-neighbors g x y) 4))
+                                                          \x
+                                                          v))
                                                       row)))
                                   g))]
       (if (= new-g g)
         (->> new-g
-             flatten
+             (mapcat identity)
              (filter #(= \x %))
              count)
         (recur new-g)))))
