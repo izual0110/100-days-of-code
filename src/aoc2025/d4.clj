@@ -13,28 +13,25 @@
 (defn get-neighbors [grid x y]
   (let [max-x (dec (count grid))
         max-y (dec (count (first grid)))]
-    (if (not= \@ (get-in grid [x y]))
-      10
-      (->> positions
-           (map (fn [[dx dy]] [(+ x dx) (+ y dy)]))
-           (filter (fn [[nx ny]]
-                     (and (>= nx 0)
-                          (>= ny 0)
-                          (<= nx max-x)
-                          (<= ny max-y))))
-           (map (fn [[nx ny]] (get-in grid [nx ny])))
-           (filter #(= \@ %))
-           count))))
-
-(assert (= 10 (get-neighbors (->> test_grid
-                                  (mapv vec)) 0 0)))
+    (->> positions
+         (map (fn [[dx dy]] [(+ x dx) (+ y dy)]))
+         (filter (fn [[nx ny]]
+                   (and (>= nx 0)
+                        (>= ny 0)
+                        (<= nx max-x)
+                        (<= ny max-y))))
+         (map (fn [[nx ny]] (get-in grid [nx ny])))
+         (filter #(= \@ %))
+         count)))
 
 (assert (= 13 (time (let [g (->> test_grid
                                  (mapv vec))]
                       (->> g
                            (map-indexed (fn [x row]
                                           (map-indexed (fn [y _]
-                                                         (get-neighbors g x y))
+                                                         (if (= \@ (get-in g [x y]))
+                                                           (get-neighbors g x y)
+                                                           10))
                                                        row)))
                            flatten
                            (filter #(< % 4))
@@ -45,7 +42,9 @@
                         (->> g
                              (map-indexed (fn [x row]
                                             (map-indexed (fn [y _]
-                                                           (get-neighbors g x y))
+                                                           (if (= \@ (get-in g [x y]))
+                                                             (get-neighbors g x y)
+                                                             10))
                                                          row)))
                              flatten
                              (filter #(< % 4))
@@ -56,10 +55,10 @@
   (loop [g grid]
     (let [new-g (vec (map-indexed (fn [x row]
                                     (vec (map-indexed (fn [y _]
-                                                        (let [n (get-neighbors g x y)]
-                                                          (if (< n 4) 
+                                                        (let [v (get-in g [x y])]
+                                                          (if (and (= \@ v) (< (get-neighbors g x y) 4))
                                                             \x
-                                                            (get-in g [x y]))))
+                                                            v)))
                                                       row)))
                                   g))]
       (if (= new-g g)
@@ -77,3 +76,15 @@
                            (mapv vec)
                            calc))))
 
+
+(do
+  (vec (for [i (range 10)] (time (->> grid
+                                      (mapv vec)
+                                      calc))))
+  (println "start profiling")
+  (prof/start)
+  (time (->> grid
+             (mapv vec)
+             calc))
+  (println (prof/stop))
+  (println "end profiling"))
