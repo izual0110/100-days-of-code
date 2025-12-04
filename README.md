@@ -1,6 +1,6 @@
 # 100-days-of-code
 
-> clj -M:repl
+> clj -X:repl
 
 ##### for windows
 > docker build -t clj .
@@ -22,4 +22,4 @@
 > 
 > Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Unrestricted
 >
-> clj -M:repl
+> clj -X:repl
