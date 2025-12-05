@@ -37,6 +37,7 @@
 
 (assert (= [[1 6]] (calc2 [[1 3] [4 6]])))
 (assert (=  [[1 20]] (calc2 [[1 6] [3 20] [3 10]])))
+(assert (=  [[1 20]] (calc2 [[1 6] [3 10] [3 20]])))
 
 (assert (=  14 (->> test_database
                     parse-database
