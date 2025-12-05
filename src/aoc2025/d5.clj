@@ -26,7 +26,7 @@
                     parse-database
                     check-ids-in-ranges)))
 
-(defn merger-ranges [ranges]
+(defn merge-ranges [ranges]
   (let [sorted-ranges (sort-by first ranges)]
     (reduce (fn [acc [s e]]
               (if
@@ -35,20 +35,20 @@
                                            (assoc acc (dec (count acc)) [ps (max e pe)])
                                            (conj acc [s e]))))) [] sorted-ranges)))
 
-(assert (= [[1 6]] (merger-ranges [[1 3] [4 6]])))
-(assert (=  [[1 20]] (merger-ranges [[1 6] [3 20] [3 10]])))
-(assert (=  [[1 20]] (merger-ranges [[1 6] [3 10] [3 20]])))
+(assert (= [[1 6]] (merge-ranges [[1 3] [4 6]])))
+(assert (=  [[1 20]] (merge-ranges [[1 6] [3 20] [3 10]])))
+(assert (=  [[1 20]] (merge-ranges [[1 6] [3 10] [3 20]])))
 
 (assert (=  14 (->> test_database
                     parse-database
                     first
-                    merger-ranges
+                    merge-ranges
                     (reduce (fn [acc [s e]] (+ 1 acc (- e s))) 0))))
 
 (assert (= 336790092076620 (->> database
                                 parse-database
                                 first
-                                merger-ranges
+                                merge-ranges
                                 (reduce (fn [acc [s e]]
                                           (if (= s e)
                                             (inc acc)
