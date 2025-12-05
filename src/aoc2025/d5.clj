@@ -26,7 +26,7 @@
                     parse-database
                     calc)))
 
-(defn calc2 [[ranges _]]
+(defn calc2 [ranges]
   (let [sorted-ranges (sort-by first ranges)]
     (reduce (fn [acc [s e]]
               (if
@@ -35,16 +35,18 @@
                                            (assoc acc (dec (count acc)) [ps (max e pe)])
                                            (conj acc [s e]))))) [] sorted-ranges)))
 
-(assert (= [[1 6]] (calc2 [[[1 3] [4 6]]])))
-(assert (=  [[1 20]] (calc2 [[[1 6] [3 20] [3 10]]])))
+(assert (= [[1 6]] (calc2 [[1 3] [4 6]])))
+(assert (=  [[1 20]] (calc2 [[1 6] [3 20] [3 10]])))
 
 (assert (=  14 (->> test_database
                     parse-database
+                    first
                     calc2
                     (reduce (fn [acc [s e]] (+ 1 acc (- e s))) 0))))
 
 (assert (= 336790092076620 (->> database
                                 parse-database
+                                first
                                 calc2
                                 (reduce (fn [acc [s e]]
                                           (if (= s e)
