@@ -13,11 +13,12 @@
 
 (defn calc [lines]
   (let [nums (drop-last lines)
-        op (last lines)]
+        op (last lines)
+        get-all-numbers (fn [i] (map #(Long/parseLong (nth % i)) nums))]
     (map-indexed (fn [i o]
                    (if (= "+" o)
-                     (apply + (map #(Long/parseLong (get % i)) nums))
-                     (apply * (map #(Long/parseLong (get % i)) nums)))) op)))
+                     (apply + (get-all-numbers i))
+                     (apply * (get-all-numbers i)))) op)))
 
 (assert (= 4277556 (->> test_problems
                         (mapv parse)
@@ -30,24 +31,23 @@
                               (apply +))))
 
 (defn rtl [l]
-  (let [nums (drop-last l)
+  (let [nums (vec (drop-last l))
         ops (str/split (last l) #"(\s+)")
         c (count (first nums))]
-    (loop [o ops i (dec c) r [] t []]
+    (loop [o (map #(if (= "+" %) + *) ops) i (dec c) r [] t []]
       (if (empty? o) r
           (let [tmp (->> nums
                          (map #(get % i))
                          (apply str)
                          str/trim)]
             (if (= "" tmp)
-              (recur (drop-last o) (dec i) (conj r (apply (if (= "+" (last o)) + *) t)) [])
+              (recur (drop-last o) (dec i) (conj r (apply (last o) t)) [])
               (recur o (dec i) r (conj t (Long/parseLong tmp)))))))))
 
 (assert (= 3263827 (->> test_problems
                         rtl
                         (apply +))))
 
-(assert (= 9770311947567 (->> problems
-                              rtl
-                              (apply +))))
-
+(assert (= 9770311947567 (time (->> problems
+                                    rtl
+                                    (apply +)))))
