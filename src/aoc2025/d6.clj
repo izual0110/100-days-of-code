@@ -14,11 +14,11 @@
 (defn calc [lines]
   (let [nums (drop-last lines)
         op (last lines)
-        get-all-numbers (fn [i] (map #(Long/parseLong (nth % i)) nums))]
+        get-numbers (fn [i] (map #(Long/parseLong (nth % i)) nums))]
     (map-indexed (fn [i o]
                    (if (= "+" o)
-                     (apply + (get-all-numbers i))
-                     (apply * (get-all-numbers i)))) op)))
+                     (apply + (get-numbers i))
+                     (apply * (get-numbers i)))) op)))
 
 (assert (= 4277556 (->> test_problems
                         (mapv parse)
