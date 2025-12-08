@@ -24,7 +24,10 @@
        (filter #(contains? % v))
        first))
 
-(find-group [#{[1 2] [3 4]} #{5 6}] [2 1])
+(defn in?  [groups v]
+  (->> groups
+       (filter #(some (fn [elm] (= elm v)) %))
+       first))
 
 
 (defn group-boxes [connections boxes]
@@ -36,7 +39,7 @@
                     flatten
                     (into {})
                     (sort-by second))]
-    (loop [distances (keys (take connections groups)) r (set(map (fn [v] #{v}) boxes))]
+    (loop [distances (keys (take connections groups)) r (set (map (fn [v] #{v}) boxes))]
       (if (empty? distances)
         r
         (let [f (first distances)
@@ -46,9 +49,7 @@
               g2 (find-group r f2)
               new-r  (-> r
                          (disj g1 g2)
-                         (conj (apply conj g1 g2)))
-              ] (recur (next distances) new-r))))))
-
+                         (conj (apply conj g1 g2)))] (recur (next distances) new-r))))))
 
 (->> test-boxes
      (mapv (parse-box))
@@ -65,4 +66,48 @@
      (map count)
      sort
      (take-last 3)
+     (apply *))
+
+(defn find-group2 [groups v]
+  (->> groups
+       (filter (fn [e]
+                 (contains? (->> e second) v)))
+       first))
+
+(defn group-boxes2 [boxes]
+  (let [groups (->> boxes
+                    (map-indexed (fn [i v1]
+                                   (mapv (fn [v2]
+                                           (if (< (first v1) (first v2))
+                                             [[v1 v2] (distance v1 v2)]
+                                             [[v2 v1] (distance v1 v2)]))
+                                         (nthnext boxes (inc i)))))
+                    (mapcat identity)
+                    (sort-by second))]
+    (loop [distances (map first groups) r (set (map (fn [v] [v #{v}]) boxes)) last-value (first distances)]
+      (if (empty? distances)
+        last-value
+        (let [f (first distances)
+              f1 (first f)
+              f2 (second f)
+              g1 (find-group2 r f1)
+              g2 (find-group2 r f2)
+              new-r (if (= g1 g2) r (-> r
+                                        (disj g1 g2)
+                                        (conj [(first g1) (apply conj (second g1) (second g2))])))]
+          (recur (next distances) new-r (if (= g1 g2) last-value f)))))))
+
+
+
+
+(->> test-boxes
+     (mapv (parse-box))
+     (group-boxes2)
+     (map first)
+      (apply *))
+
+(->> boxes
+     (mapv (parse-box))
+     (group-boxes2)
+     (map first)
      (apply *))
