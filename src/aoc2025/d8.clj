@@ -24,49 +24,40 @@
        (filter #(contains? % v))
        first))
 
-(defn in?  [groups v]
-  (->> groups
-       (filter #(some (fn [elm] (= elm v)) %))
-       first))
-
-
 (defn group-boxes [connections boxes]
-  (let [groups (->> boxes
-                    (map-indexed (fn [i v1]
-                                   (mapv (fn [v2]
-                                           {#{v1 v2} (distance v1 v2)})
-                                         (nthnext boxes (inc i)))))
-                    flatten
-                    (into {})
-                    (sort-by second))]
-    (loop [distances (keys (take connections groups)) r (set (map (fn [v] #{v}) boxes))]
-      (if (empty? distances)
+  (let [pairs (->> (for [[i v1] (map-indexed vector boxes)
+                          v2 (drop (inc i) boxes)]
+                      [[v1 v2] (distance v1 v2)])
+                    (sort-by second)
+                    (take connections)
+                    (map first))]
+    (loop [[[f1 f2] & rest-pairs] pairs r (into #{} (map hash-set) boxes)]
+      (if (nil? f1)
         r
-        (let [f (first distances)
-              f1 (first f)
-              f2 (second f)
-              g1 (find-group r f1)
+        (let [g1 (find-group r f1)
               g2 (find-group r f2)
-              new-r  (-> r
-                         (disj g1 g2)
-                         (conj (apply conj g1 g2)))] (recur (next distances) new-r))))))
+              new-r  (if (= g1 g2) r
+                         (-> r
+                             (disj g1 g2)
+                             (conj (apply conj g1 g2))))]
+          (recur rest-pairs new-r))))))
 
-(->> test-boxes
-     (mapv (parse-box))
-     (group-boxes 10)
-     (map count)
-     sort
-     (take-last 3)
-     (apply *))
+(assert (= 40 (->> test-boxes
+                   (mapv (parse-box))
+                   (group-boxes 10)
+                   (map count)
+                   sort
+                   (take-last 3)
+                   (apply *))))
 
 
-(->> boxes
-     (mapv (parse-box))
-     (group-boxes 1000)
-     (map count)
-     sort
-     (take-last 3)
-     (apply *))
+(assert (= 52668 (time (->> boxes
+                            (mapv (parse-box))
+                            (group-boxes 1000)
+                            (map count)
+                            sort
+                            (take-last 3)
+                            (apply *)))))
 
 (defn find-group2 [groups v]
   (->> groups
