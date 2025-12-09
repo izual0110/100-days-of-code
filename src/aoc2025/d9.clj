@@ -58,8 +58,7 @@
                         (sort-by second >))
         edges      (->> (concat forms [(first forms)])
                         (partition 2 1)
-                        (map rect)
-                        vec)]
+                        (mapv rect))]
     (filter
      (fn [[[[x1 y1] [x2 y2]]]]
        (let [ix1 (inc x1)
