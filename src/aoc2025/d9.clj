@@ -45,12 +45,11 @@
    [[(min x1 x2) (min y1 y2)]
     [(max x1 x2) (max y1 y2)]]))
 
-;;use insted of fn [[[[x1 y1] [x2 y2]]]]
 (defn shrink-rect [[[x1 y1] [x2 y2]]]
   [[(inc x1) (inc y1)]
    [(dec x2) (dec y2)]])
 
-(defn filter-inside-rectangles [forms]
+(defn first-inside-rectangle [forms]
   (let [rectangles (->> (for [[i v1] (map-indexed vector forms)
                               v2     (drop (inc i) forms)]
                           [(rect v1 v2)
@@ -59,32 +58,24 @@
         edges      (->> (concat forms [(first forms)])
                         (partition 2 1)
                         (mapv rect))]
-    (filter
-     (fn [[[[x1 y1] [x2 y2]]]]
-       (let [ix1 (inc x1)
-             iy1 (inc y1)
-             ix2 (dec x2)
-             iy2 (dec y2)]
-         (not-any?
-          (fn [[[ex1 ey1] [ex2 ey2]]]
-            (and (< ix1 ex2)
-                 (> ix2 ex1)
-                 (< iy1 ey2)
-                 (> iy2 ey1)))
-          edges)))
-     rectangles)))
+    (->> rectangles
+         (filter
+          (fn [[rect]]
+            (let [[[x1 y1] [x2 y2]] (shrink-rect rect)]
+              (not-any?
+               (fn [[[ex1 ey1] [ex2 ey2]]] (and (< x1 ex2) (> x2 ex1) (< y1 ey2) (> y2 ey1)))
+               edges))))
+         first)))
 
 (assert (= 24 (->> test-form
                    (mapv parse-form)
-                   filter-inside-rectangles
-                   (map second)
-                   (apply max))))
+                   first-inside-rectangle
+                   second)))
 
 (assert (= 1501292304 (time (->> form
                                  (mapv parse-form)
-                                 filter-inside-rectangles
-                                 (map second)
-                                 (apply max)))))
+                                 first-inside-rectangle
+                                 second))))
 
 
 
