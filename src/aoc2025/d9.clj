@@ -39,20 +39,27 @@
                            last
                            second)))
 
+(defn rect
+  ([[v1 v2]] (rect v1 v2))
+  ([[x1 y1] [x2 y2]]
+   [[(min x1 x2) (min y1 y2)]
+    [(max x1 x2) (max y1 y2)]]))
+
+;;use insted of fn [[[[x1 y1] [x2 y2]]]]
+(defn shrink-rect [[[x1 y1] [x2 y2]]]
+  [[(inc x1) (inc y1)]
+   [(dec x2) (dec y2)]])
+
 (defn filter-inside-rectangles [forms]
   (let [rectangles (->> (for [[i v1] (map-indexed vector forms)
                               v2     (drop (inc i) forms)]
-                          (let [[x1 y1] v1
-                                [x2 y2] v2]
-                            [[[(min x1 x2) (min y1 y2)]
-                              [(max x1 x2) (max y1 y2)]]
-                             (calc-rectangle v1 v2)]))
+                          [(rect v1 v2)
+                           (calc-rectangle v1 v2)])
                         (sort-by second >))
         edges      (->> (concat forms [(first forms)])
                         (partition 2 1)
-                        (pmap (fn [[[x1 y1] [x2 y2]]]
-                                [[(min x1 x2) (min y1 y2)]
-                                 [(max x1 x2) (max y1 y2)]])))]
+                        (map rect)
+                        vec)]
     (filter
      (fn [[[[x1 y1] [x2 y2]]]]
        (let [ix1 (inc x1)
