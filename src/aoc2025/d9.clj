@@ -32,12 +32,23 @@
                    last
                    second)))
 
-(assert (= 4763932976 (->> form
-                           (mapv parse-form)
-                           get-all-rectangles
-                           (sort-by second)
-                           last
-                           second)))
+;;time: 285ms
+(assert (= 4763932976 (time (->> form
+                                 (mapv parse-form)
+                                 get-all-rectangles
+                                 (sort-by second)
+                                 last
+                                 second))))
+
+;;optimized version for part 1
+;;time 20ms
+(assert (= 4763932976 (time (loop [[l & rest-lines] form p [] r 0]
+                              (if (nil? l) r
+                                  (let [[x y] (parse-form l)
+                                        new-p (conj p [x y])]
+                                    (if (empty? p)
+                                      (recur rest-lines new-p r)
+                                      (recur rest-lines new-p (max r (apply max (for [i p] (calc-rectangle i [x y]))))))))))))
 
 (defn rect
   ([[v1 v2]] (rect v1 v2))
